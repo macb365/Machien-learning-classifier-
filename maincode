@@ -1,0 +1,59 @@
+# -*- coding: utf-8 -*-
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report
+from sklearn.ensemble import VotingClassifier
+from sklearn import tree 
+
+import numpy as np
+ 
+
+import csv
+import warnings
+warnings.filterwarnings('ignore')  # "error", "ignore", "always", "default", "module" or "once"
+
+print("Reading file")
+# these are the arrays that will hold each instance and thier 
+trainingdataset = []
+traininglabels = []
+#open training file
+with open(rb'*file directory*') as csv_file:
+    reader = csv.reader(csv_file, skipinitialspace = True)
+    #orginise data into different arrays
+    for row in reader:
+        trainingdataset.append(row[0:1999]) # there are 200 features meaning the first is 0 # 
+        traininglabels.append(row[1999]) # justify the row with the endsstates #
+
+#open test file
+testing_dataset = []
+testing_data_labels = []
+with open(rb'*file directory*') as csv_file:
+    reader = csv.reader(csv_file, skipinitialspace = True)
+    
+    for row in reader:
+        testing_dataset.append(row[0:1999]) # there are 200 features meaning the first is 0 #
+        testing_data_labels.append(row[1999])  # justify the row with the endsstates #
+
+trainingdataset.pop(0)
+traininglabels.pop(0)
+
+testing_dataset.pop(0)
+testing_data_labels.pop(0)
+
+trainingdatasetArray = np.array(trainingdataset).astype(np.float64)
+traininglabelsArray = np.array(traininglabels).astype(np.float64)
+#test list to array
+test_Array_dataset = np.array(testing_dataset).astype(np.float64)
+testing_Array_labels = np.array(testing_data_labels).astype(np.float64)
+
+# Training Majority Vote (combo of both DT and KNN)
+subclassifier1 = KNeighborsClassifier(n_neighbors = 1)
+subclassifier2 = tree.DecisionTreeClassifier()
+voting_classifier = VotingClassifier(estimators = [('subc1', subclassifier1),
+                                                    ('subc2', subclassifier2)
+                                                    ], voting = 'hard')
+voting_classifier.fit(trainingdatasetArray, traininglabelsArray)
+
+predict_test_labels = voting_classifier.predict(test_Array_dataset)
+print(classification_report(testing_Array_labels, predict_test_labels, digits=3))
+
